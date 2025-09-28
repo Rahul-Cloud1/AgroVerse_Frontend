@@ -1,12 +1,20 @@
-# Deploying AgroVerse on Render
+# Deploying AgroVerse on Render (Static Site)
 
-This guide will help you deploy your AgroVerse React Native Expo project as a web application on Render.
+This guide will help you deploy your AgroVerse React Native Expo project as a **static site** on Render - the most efficient and cost-effective option for web apps.
 
 ## Prerequisites
 
 - GitHub account
 - Render account (free tier available)
 - Your project pushed to a GitHub repository
+
+## Why Static Site Deployment?
+
+✅ **Faster Loading** - CDN-delivered static files  
+✅ **More Cost-Effective** - Free tier with generous limits  
+✅ **Better Performance** - No server-side processing needed  
+✅ **Auto-Scaling** - Handles traffic spikes automatically  
+✅ **Global CDN** - Fast worldwide access  
 
 ## Deployment Steps
 
@@ -34,23 +42,22 @@ git push origin main
 #### Option A: Using render.yaml (Recommended)
 
 1. Go to [render.com](https://render.com) and sign in
-2. Click "New +" and select "Blueprint"
+2. Click "New +" and select **"Blueprint"**
 3. Connect your GitHub repository
 4. Select the repository containing your AgroVerse project
 5. Render will automatically detect the `render.yaml` file
 6. Click "Apply" to start the deployment
 
-#### Option B: Manual Setup
+#### Option B: Manual Static Site Setup
 
 1. Go to [render.com](https://render.com) and sign in
-2. Click "New +" and select "Web Service"
+2. Click "New +" and select **"Static Site"**
 3. Connect your GitHub repository
-4. Configure the service:
-   - **Name**: `agroverse-web`
-   - **Environment**: `Node`
+4. Configure the site:
+   - **Name**: `agroverse-static`
    - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm run serve`
-   - **Node Version**: Select Node 18 or later
+   - **Publish Directory**: `dist`
+   - **Auto-Deploy**: Yes (recommended)
 
 ### 4. Environment Variables (if needed)
 
@@ -68,10 +75,22 @@ To use a custom domain:
 
 ## Build Process
 
-The deployment process will:
+The static site deployment process will:
 1. Install dependencies (`npm install`)
 2. Build the web version (`npm run build`)
-3. Serve the built files using the `serve` package
+3. Deploy static files to global CDN
+4. Configure routing and security headers
+
+### 🔧 **Your Static Site Configuration:**
+```yaml
+Type: Static Site
+Build Command: npm install && npm run build
+Publish Directory: dist
+Auto-Deploy: On every Git push
+CDN: Global content delivery network
+Headers: Security headers included
+Routing: Client-side routing configured
+```
 
 ## Troubleshooting
 
