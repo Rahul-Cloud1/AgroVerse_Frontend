@@ -17,8 +17,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const API_BASE_URL = 'http://192.168.56.1:5000';
+import API_CONFIG from '../config/apiConfig';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -71,11 +70,11 @@ export default function HomeScreen() {
   const handleAuth = async () => {
     setLoading(true);
     try {
-      const route = isRegister ? 'api/auth/register' : 'api/auth/login';
+      const route = isRegister ? API_CONFIG.ENDPOINTS.AUTH.REGISTER : API_CONFIG.ENDPOINTS.AUTH.LOGIN;
       const body = isRegister
         ? { email, password, name: fullName, contactNo, address }
         : { email, password };
-      const res = await fetch(`${API_BASE_URL}/${route}`, {
+      const res = await fetch(`${API_CONFIG.BASE_URL}${route}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

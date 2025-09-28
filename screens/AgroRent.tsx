@@ -16,6 +16,7 @@ import {
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import * as mime from 'react-native-mime-types'; // ✅ Optional, for dynamic type resolution
+import API_CONFIG from '../config/apiConfig';
 
 const CATEGORIES = ['All', 'Tractors', 'Weeders', 'Mowers', 'Sprayers', 'Tools'];
 
@@ -42,7 +43,7 @@ export default function AgroRent() {
 
   const fetchEquipment = async () => {
     try {
-      const res = await axios.get('http://192.168.56.1:5000/api/equipment');
+      const res = await axios.get(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.EQUIPMENT}`);
       setEquipmentList(res.data);
     } catch (e) {
       Alert.alert('Error', 'Could not fetch equipment list.');
@@ -59,7 +60,7 @@ export default function AgroRent() {
 
   const handleBookNow = async (equipmentId) => {
     try {
-      await axios.post('http://192.168.56.1:5000/api/rent-requests', {
+      await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.RENT_REQUESTS}`, {
         equipmentId,
         userId,
       });
@@ -111,7 +112,7 @@ export default function AgroRent() {
       } as any); // ✅ React Native needs casting for file
 
       try {
-        const imgRes = await axios.post('http://192.168.56.1:5000/api/upload', formData, {
+        const imgRes = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.UPLOAD}`, formData, {
           // ✅ DO NOT manually set content-type; Axios will set it
         });
 
@@ -133,7 +134,7 @@ export default function AgroRent() {
         imageUrl,
       };
 
-      await axios.post('http://192.168.56.1:5000/api/equipment', payload);
+      await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.EQUIPMENT}`, payload);
       Alert.alert('Success', `Your equipment "${equipmentName}" is now listed!`);
       setEquipmentName('');
       setEquipmentCategory('');
@@ -150,10 +151,10 @@ export default function AgroRent() {
   const openDashboard = async () => {
     setDashboardVisible(true);
     try {
-      const listingsRes = await axios.get(`http://192.168.56.1:5000/api/equipment?ownerId=${userId}`);
+      const listingsRes = await axios.get(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.EQUIPMENT}?ownerId=${userId}`);
       setMyListings(listingsRes.data);
 
-      const requestsRes = await axios.get(`http://192.168.56.1:5000/api/rent-requests?ownerId=${userId}`);
+      const requestsRes = await axios.get(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.RENT_REQUESTS}?ownerId=${userId}`);
       setMyRequests(requestsRes.data);
     } catch (e) {
       Alert.alert('Error', 'Could not fetch dashboard data.');
@@ -162,7 +163,7 @@ export default function AgroRent() {
 
   const handleApproveRequest = async (requestId) => {
     try {
-      await axios.post(`http://192.168.56.1:5000/api/rent-requests/${requestId}/approve`);
+      await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.RENT_REQUESTS}/${requestId}/approve`);
       Alert.alert('Approved', 'Rent request approved.');
       openDashboard();
     } catch (e) {
