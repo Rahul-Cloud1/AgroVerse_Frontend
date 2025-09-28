@@ -34,7 +34,8 @@
       "newArchEnabled": true
     },
     "web": {
-      "favicon": "./assets/logo.png"
+      "favicon": "./assets/logo.png",
+      "bundler": "metro"
     },
     "extra": {
       "eas": {
