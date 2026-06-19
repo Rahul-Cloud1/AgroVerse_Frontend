@@ -343,8 +343,12 @@ export default function KrishiMitra() {
     }
     setWeatherLoading(true);
     const { latitude, longitude } = location.coords;
-    const apiKey = 'b1992fdf15fb7860662c4542def14e02'; // Replace with your OpenWeatherMap API Key
-    try {
+    const apiKey = process.env.EXPO_PUBLIC_OPENWEATHER_API_KEY;
+    if (!apiKey) {
+      setWeather(t.weatherFailed);
+      setWeatherLoading(false);
+      return;
+    }    try {
       const response = await axios.get(
         `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`
       );
@@ -413,10 +417,16 @@ export default function KrishiMitra() {
     setNewsLoading(true);
     setNewsError('');
     setNewsArticles([]);
+    const newsApiKey = process.env.EXPO_PUBLIC_NEWSAPI_KEY;
+    if (!newsApiKey) {
+      setNewsError(t.newsFailed);
+      setNewsLoading(false);
+      return;
+    }
     try {
-      // Replace YOUR_API_KEY with your NewsAPI.org API key
+      
       const response = await axios.get(
-        'https://newsapi.org/v2/everything?q=agriculture OR farming OR crops&language=en&sortBy=publishedAt&pageSize=10&apiKey=91b30bc7f1614a1394e0b98852a71807'
+        `https://newsapi.org/v2/everything?q=agriculture OR farming OR crops&language=en&sortBy=publishedAt&pageSize=10&apiKey=${newsApiKey}`
       );
       setNewsArticles(response.data.articles);
     } catch (e) {

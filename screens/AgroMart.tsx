@@ -14,8 +14,10 @@ import {
   Animated,
   ScrollView,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import API_CONFIG from '../config/apiConfig';
 import { useLanguage } from '../contexts/LanguageContext';
 
 // Products data
@@ -317,6 +319,7 @@ export default function AgroMart({ navigation }: AgroMartProps) {
   const [contact, setContact] = useState('');
   const [paymentMode, setPaymentMode] = useState('COD');
   const [orderConfirmed, setOrderConfirmed] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const addToCart = (item: any) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -357,33 +360,53 @@ export default function AgroMart({ navigation }: AgroMartProps) {
       alert(tr('enterAddressContact'));
       return;
     }
-    // Save order to AsyncStorage
+    
     const order = {
-      id: Date.now(),
-      items: cart,
+       items: cart.map(item => ({
+        productId: String(item.id),
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      })),
       total,
       address,
       contact,
       paymentMode,
-      date: new Date().toLocaleString(),
+      
     };
+    setCheckoutLoading(true);
     try {
-      const ordersData = await AsyncStorage.getItem('orders');
-      const prevOrders = ordersData ? JSON.parse(ordersData) : [];
-      await AsyncStorage.setItem('orders', JSON.stringify([order, ...prevOrders]));
-    } catch (e) {}
-    setOrderConfirmed(true);
-    setCart([]);
-    setTimeout(() => {
-      setCheckoutVisible(false);
-      setCartVisible(false);
-      setOrderConfirmed(false);
-      setAddress('');
-      setContact('');
-      setPaymentMode('COD');
-      // Optionally navigate to Orders page
-      // navigation.navigate('Orders');
-    }, 1500);
+      const token = await AsyncStorage.getItem('token');
+      const res = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ORDERS}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(order),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        throw new Error(errBody?.message || `Checkout failed (${res.status})`);
+      }
+      setOrderConfirmed(true);
+      setCart([]);
+      setTimeout(() => {
+        setCheckoutVisible(false);
+        setCartVisible(false);
+        setOrderConfirmed(false);
+        setAddress('');
+        setContact('');
+        setPaymentMode('COD');
+        // Optionally navigate to Orders page
+        // navigation.navigate('Orders');
+      }, 1500);
+    } catch (e) {
+      console.log('Checkout error:', e);
+      alert(tr('checkoutFailed'));
+    } finally {
+      setCheckoutLoading(false);
+    }
   };
 
   return (
@@ -526,10 +549,18 @@ export default function AgroMart({ navigation }: AgroMartProps) {
                       {tr('onlinePaymentSoon')}
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout}>
-                    <Text style={styles.checkoutText}>{tr('placeOrder')}</Text>
+                  <TouchableOpacity
+                    style={[styles.checkoutBtn, checkoutLoading && { opacity: 0.6 }]}
+                    onPress={handleCheckout}
+                    disabled={checkoutLoading}
+                  >
+                    {checkoutLoading ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <Text style={styles.checkoutText}>{tr('placeOrder')}</Text>
+                    )}
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setCheckoutVisible(false)} style={styles.closeBtn}>
+                  <TouchableOpacity onPress={() => setCheckoutVisible(false)} style={styles.closeBtn} disabled={checkoutLoading}>
                     <Text style={styles.closeText}>{tr('cancel')}</Text>
                   </TouchableOpacity>
                 </>
